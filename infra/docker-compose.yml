@@ -1,17 +1,83 @@
-version: '3.3'
+version: '3.8'
+
 services:
+  db:
+    image: postgres:13.0
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=foodgram
+      - POSTGRES_USER=foodgram_user
+      - POSTGRES_PASSWORD=12345678
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U foodgram_user -d foodgram"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: always
+
+  backend:
+    build: 
+      context: ../backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../backend:/app
+      - static_volume:/app/static
+      - media_volume:/app/media
+      - ../data:/app/data
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=foodgram
+      - POSTGRES_USER=foodgram_user
+      - POSTGRES_PASSWORD=12345678
+      - DB_HOST=db
+      - DB_PORT=5432
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    command: >
+      sh -c "python -c 'import psycopg2; print(\"Waiting for database...\"); conn = psycopg2.connect(dbname=\"foodgram\", user=\"foodgram_user\", password=\"12345678\", host=\"db\", port=\"5432\"); print(\"Database is ready!\")' &&
+             python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn foodgram.wsgi:application --bind 0.0.0.0:8000"
 
   frontend:
-    container_name: foodgram-front
-    build: ../frontend
-    volumes:
-      - ../frontend/:/app/result_build/
-  nginx:
-    container_name: foodgram-proxy
-    image: nginx:1.25.4-alpine
+    build: 
+      context: ../frontend
+      dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "3000:80"
+    volumes:
+      - ../frontend:/app
+      - static_frontend:/usr/share/nginx/html/static
+    depends_on:
+      - backend
+    restart: always
+
+  nginx:
+    image: nginx:1.21.3
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ../frontend/build:/usr/share/nginx/html/
-      - ../docs/:/usr/share/nginx/html/api/docs/
+      - static_volume:/usr/share/nginx/html/static
+      - media_volume:/usr/share/nginx/html/media
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+    restart: always
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+  static_frontend:
