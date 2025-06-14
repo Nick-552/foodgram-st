@@ -1,0 +1,256 @@
+{
+	"id": "c557ef95-f501-4d64-b3f9-1b2e8903727b",
+	"name": "Foodgram Recipe Generation Tests",
+	"timestamp": "2025-06-14T22:16:39.706Z",
+	"collection_id": "35123678-c8832610-35ae-4e6f-b01b-57eeab76d837",
+	"folder_id": 0,
+	"environment_id": "0",
+	"totalPass": 14,
+	"delay": 0,
+	"persist": true,
+	"status": "finished",
+	"startedAt": "2025-06-14T22:15:53.066Z",
+	"totalFail": 0,
+	"results": [
+		{
+			"id": "171aed9d-998d-45df-96ea-388ee939a1f4",
+			"name": "Generate Recipes - Basic",
+			"url": "http://localhost:8000/api/recipes/generate/",
+			"time": 12694,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Response contains array of recipes": true,
+				"Recipes have required fields": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Response contains array of recipes": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Recipes have required fields": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				12694
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Response contains array of recipes": true,
+					"Recipes have required fields": true
+				}
+			]
+		},
+		{
+			"id": "cef881be-3552-4015-a97e-571d2df24bbe",
+			"name": "Generate Recipes - With Recipe Name",
+			"url": "http://localhost:8000/api/recipes/generate/",
+			"time": 12878,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Response contains array of recipes": true,
+				"First recipe has the specified name": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Response contains array of recipes": {
+					"pass": 1,
+					"fail": 0
+				},
+				"First recipe has the specified name": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				12878
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Response contains array of recipes": true,
+					"First recipe has the specified name": true
+				}
+			]
+		},
+		{
+			"id": "11b48f71-739d-42ab-83b6-05d0ac7044ee",
+			"name": "Generate Recipes - Custom Count",
+			"url": "http://localhost:8000/api/recipes/generate/",
+			"time": 8430,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Response contains exactly 2 recipes": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Response contains exactly 2 recipes": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				8430
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Response contains exactly 2 recipes": true
+				}
+			]
+		},
+		{
+			"id": "643af89a-46be-449e-961b-4bca311a007a",
+			"name": "Generate Recipes - No Additional Ingredients",
+			"url": "http://localhost:8000/api/recipes/generate/",
+			"time": 11219,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Response contains array of recipes": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Response contains array of recipes": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				11219
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Response contains array of recipes": true
+				}
+			]
+		},
+		{
+			"id": "7810ead1-d5a1-42f0-8b6d-881dd6ee9ccc",
+			"name": "Generate Recipes - Invalid (No Ingredients)",
+			"url": "http://localhost:8000/api/recipes/generate/",
+			"time": 9,
+			"responseCode": {
+				"code": 400,
+				"name": "Bad Request"
+			},
+			"tests": {
+				"Status code is 400": true,
+				"Error message about missing ingredients": true
+			},
+			"testPassFailCounts": {
+				"Status code is 400": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Error message about missing ingredients": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				9
+			],
+			"allTests": [
+				{
+					"Status code is 400": true,
+					"Error message about missing ingredients": true
+				}
+			]
+		},
+		{
+			"id": "84e980cf-6b65-4b7f-bb9f-f5eec04b9472",
+			"name": "Generate Recipes - Invalid Count",
+			"url": "http://localhost:8000/api/recipes/generate/",
+			"time": 27,
+			"responseCode": {
+				"code": 400,
+				"name": "Bad Request"
+			},
+			"tests": {
+				"Status code is 400": true,
+				"Error message about invalid count": true
+			},
+			"testPassFailCounts": {
+				"Status code is 400": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Error message about invalid count": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				27
+			],
+			"allTests": [
+				{
+					"Status code is 400": true,
+					"Error message about invalid count": true
+				}
+			]
+		}
+	],
+	"count": 1,
+	"totalTime": 45257,
+	"collection": {
+		"requests": [
+			{
+				"id": "171aed9d-998d-45df-96ea-388ee939a1f4",
+				"method": "POST"
+			},
+			{
+				"id": "cef881be-3552-4015-a97e-571d2df24bbe",
+				"method": "POST"
+			},
+			{
+				"id": "11b48f71-739d-42ab-83b6-05d0ac7044ee",
+				"method": "POST"
+			},
+			{
+				"id": "643af89a-46be-449e-961b-4bca311a007a",
+				"method": "POST"
+			},
+			{
+				"id": "7810ead1-d5a1-42f0-8b6d-881dd6ee9ccc",
+				"method": "POST"
+			},
+			{
+				"id": "84e980cf-6b65-4b7f-bb9f-f5eec04b9472",
+				"method": "POST"
+			}
+		]
+	}
+}

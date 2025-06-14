@@ -1,10 +1,25 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 from django.contrib.admin import display
 
 from .models import (
-    Favorite, Ingredient, IngredientAmount, Recipe,
-    ShoppingCart
+    User, Follow, Favorite, Ingredient, 
+    IngredientAmount, Recipe, ShoppingCart
 )
+
+
+@admin.register(User)
+class CustomUserAdmin(UserAdmin):
+    list_display = ('email', 'username', 'first_name', 'last_name')
+    list_filter = ('email', 'username')
+    search_fields = ('email', 'username', 'first_name', 'last_name')
+
+
+@admin.register(Follow)
+class FollowAdmin(admin.ModelAdmin):
+    list_display = ('user', 'author')
+    list_filter = ('user', 'author')
+    search_fields = ('user__username', 'author__username')
 
 
 @admin.register(Ingredient)
@@ -12,9 +27,6 @@ class IngredientAdmin(admin.ModelAdmin):
     list_display = ('name', 'measurement_unit')
     list_filter = ('name',)
     search_fields = ('name',)
-
-
-
 
 
 class IngredientInline(admin.TabularInline):
@@ -46,4 +58,4 @@ class FavoriteAdmin(admin.ModelAdmin):
 class ShoppingCartAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipe')
     list_filter = ('user', 'recipe')
-    search_fields = ('user__username', 'recipe__name') 
+    search_fields = ('user__username', 'recipe__name')

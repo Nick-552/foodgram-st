@@ -1,0 +1,93 @@
+/api/recipes/generate/:
+  post:
+    operationId: Generate recipes
+    description: 'Generate recipes based on provided ingredients using AI. The recipes are not saved to the database.'
+    parameters: []
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GenerateRecipeRequest'
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/GeneratedRecipe'
+        description: 'Successfully generated recipes'
+      '400':
+        $ref: '#/components/responses/ValidationError'
+    tags:
+      - Рецепты
+
+# Add these to the components/schemas section
+  GenerateRecipeRequest:
+    type: object
+    properties:
+      ingredients:
+        type: array
+        description: 'List of ingredients to use in the recipe'
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              description: 'Ingredient ID'
+            amount:
+              type: string
+              description: 'Optional amount of the ingredient'
+          required:
+            - id
+      allow_additional_ingredients:
+        type: boolean
+        description: 'Whether to allow additional ingredients in the recipe'
+        default: true
+      recipe_name:
+        type: string
+        description: 'Optional name for the recipe'
+      count:
+        type: integer
+        description: 'Number of recipes to generate (1-5)'
+        minimum: 1
+        maximum: 5
+        default: 3
+    required:
+      - ingredients
+
+  GeneratedRecipe:
+    type: object
+    properties:
+      name:
+        type: string
+        description: 'Recipe name'
+      description:
+        type: string
+        description: 'Recipe description'
+      cooking_time:
+        type: integer
+        description: 'Cooking time in minutes'
+      ingredients:
+        type: array
+        description: 'List of ingredients with amounts'
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+              description: 'Ingredient name'
+            amount:
+              type: string
+              description: 'Amount of ingredient'
+            measurement_unit:
+              type: string
+              description: 'Unit of measurement'
+          required:
+            - name
+            - amount
+      instructions:
+        type: array
+        description: 'Step-by-step cooking instructions'
+        items:
+          type: string 

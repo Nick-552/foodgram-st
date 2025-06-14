@@ -1,6 +1,6 @@
 import csv
 from django.core.management.base import BaseCommand
-from recipes.models import Ingredient
+from api.models import Ingredient
 
 class Command(BaseCommand):
     help = 'Load ingredients from CSV file (data/ingredients.csv)'

@@ -1,0 +1,311 @@
+{
+	"info": {
+		"_postman_id": "8f5e6d7c-9a10-4b11-8c12-d3e4f5a6b7c8",
+		"name": "Foodgram Recipe Generation Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Generate Recipes - Basic",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains array of recipes\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an('array');",
+							"    pm.expect(jsonData.length).to.equal(3); // Default count is 3",
+							"});",
+							"",
+							"pm.test(\"Recipes have required fields\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    jsonData.forEach(function(recipe) {",
+							"        pm.expect(recipe).to.have.property('name');",
+							"        pm.expect(recipe).to.have.property('description');",
+							"        pm.expect(recipe).to.have.property('cooking_time');",
+							"        pm.expect(recipe).to.have.property('ingredients');",
+							"        pm.expect(recipe).to.have.property('instructions');",
+							"        pm.expect(recipe.ingredients).to.be.an('array');",
+							"        pm.expect(recipe.instructions).to.be.an('array');",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"ingredients\": [\n        {\n            \"id\": 1,\n            \"amount\": \"500 г\"\n        },\n        {\n            \"id\": 2\n        }\n    ],\n    \"allow_additional_ingredients\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/recipes/generate/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"recipes",
+						"generate",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Generate Recipes - With Recipe Name",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains array of recipes\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"First recipe has the specified name\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData[0].name).to.include('Суп');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"ingredients\": [\n        {\n            \"id\": 1,\n            \"amount\": \"500 г\"\n        },\n        {\n            \"id\": 2\n        }\n    ],\n    \"recipe_name\": \"Суп с овощами\",\n    \"allow_additional_ingredients\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/recipes/generate/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"recipes",
+						"generate",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Generate Recipes - Custom Count",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains exactly 2 recipes\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an('array');",
+							"    pm.expect(jsonData.length).to.equal(2);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"ingredients\": [\n        {\n            \"id\": 1,\n            \"amount\": \"500 г\"\n        },\n        {\n            \"id\": 2\n        }\n    ],\n    \"count\": 2,\n    \"allow_additional_ingredients\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/recipes/generate/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"recipes",
+						"generate",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Generate Recipes - No Additional Ingredients",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains array of recipes\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an('array');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"ingredients\": [\n        {\n            \"id\": 1,\n            \"amount\": \"500 г\"\n        },\n        {\n            \"id\": 2\n        }\n    ],\n    \"allow_additional_ingredients\": false\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/recipes/generate/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"recipes",
+						"generate",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Generate Recipes - Invalid (No Ingredients)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Error message about missing ingredients\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('ingredients');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"ingredients\": [],\n    \"allow_additional_ingredients\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/recipes/generate/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"recipes",
+						"generate",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Generate Recipes - Invalid Count",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Error message about invalid count\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('count');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"ingredients\": [\n        {\n            \"id\": 1\n        }\n    ],\n    \"count\": 10,\n    \"allow_additional_ingredients\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/recipes/generate/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"recipes",
+						"generate",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+} 
