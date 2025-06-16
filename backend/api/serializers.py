@@ -28,6 +28,16 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         return User.objects.create_user(**validated_data)
 
 
+class Base64ImageField(serializers.ImageField):
+    def to_internal_value(self, data):
+        if isinstance(data, str) and data.startswith('data:image'):
+            format, imgstr = data.split(';base64,')
+            ext = format.split('/')[-1]
+            random_str = ''.join(random.choices(string.ascii_letters + string.digits, k=7))
+            data = ContentFile(base64.b64decode(imgstr), name=f'temp_{random_str}.{ext}')
+        return super().to_internal_value(data)
+
+
 class CustomUserSerializer(UserSerializer):
     is_subscribed = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
@@ -53,14 +63,17 @@ class CustomUserSerializer(UserSerializer):
         return None
 
 
-class Base64ImageField(serializers.ImageField):
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            format, imgstr = data.split(';base64,')
-            ext = format.split('/')[-1]
-            random_str = ''.join(random.choices(string.ascii_letters + string.digits, k=7))
-            data = ContentFile(base64.b64decode(imgstr), name=f'temp_{random_str}.{ext}')
-        return super().to_internal_value(data)
+class UserAvatarSerializer(serializers.ModelSerializer):
+    avatar = Base64ImageField()
+    
+    class Meta:
+        model = User
+        fields = ('avatar',)
+        
+    def validate(self, attrs):
+        if 'avatar' not in attrs or not attrs.get('avatar'):
+            raise serializers.ValidationError({'avatar': ['Это поле обязательно.']})
+        return attrs
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -290,6 +303,14 @@ class GenerateRecipeIngredientSerializer(serializers.Serializer):
             raise serializers.ValidationError("Ингредиент с указанным ID не существует.")
 
 
+class IngredientDetailSerializer(serializers.ModelSerializer):
+    amount = serializers.CharField(required=False)
+    
+    class Meta:
+        model = Ingredient
+        fields = ('id', 'name', 'measurement_unit', 'amount')
+        
+
 class GenerateRecipeRequestSerializer(serializers.Serializer):
     ingredients = GenerateRecipeIngredientSerializer(many=True, required=True)
     allow_additional_ingredients = serializers.BooleanField(default=True)
@@ -299,6 +320,11 @@ class GenerateRecipeRequestSerializer(serializers.Serializer):
     def validate_ingredients(self, value):
         if not value:
             raise serializers.ValidationError("Необходимо указать хотя бы один ингредиент.")
+        
+        ingredient_ids = [item['id'] for item in value]
+        if len(ingredient_ids) != len(set(ingredient_ids)):
+            raise serializers.ValidationError("Ингредиенты не должны повторяться.")
+            
         return value
 
 
@@ -313,4 +339,13 @@ class GeneratedRecipeSerializer(serializers.Serializer):
     description = serializers.CharField()
     cooking_time = serializers.IntegerField()
     ingredients = GeneratedRecipeIngredientSerializer(many=True)
-    instructions = serializers.ListField(child=serializers.CharField()) 
+    instructions = serializers.ListField(child=serializers.CharField())
+    
+    def validate(self, data):
+        if not data.get('ingredients'):
+            raise serializers.ValidationError({"ingredients": "Список ингредиентов не может быть пустым"})
+        
+        if not data.get('instructions'):
+            raise serializers.ValidationError({"instructions": "Инструкции по приготовлению не могут быть пустыми"})
+        
+        return data 

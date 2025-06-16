@@ -22,12 +22,12 @@ from .serializers import (
     CustomUserSerializer, FollowSerializer,
     IngredientSerializer, RecipeCreateSerializer,
     RecipeSerializer, GenerateRecipeRequestSerializer,
-    GeneratedRecipeSerializer
+    GeneratedRecipeSerializer, UserAvatarSerializer
 )
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAuthorOrReadOnly
 from .pagination import CustomPagination
-from .recipe_generator import RecipeGenerator
+from .utils import generate_recipes_with_ai
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -64,7 +64,7 @@ class CustomUserViewSet(UserViewSet):
                     {'error': 'Нельзя подписаться на самого себя'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            if Follow.objects.filter(user=user, author=author).exists():
+            if user.follower.filter(author=author).exists():
                 return Response(
                     {'error': 'Вы уже подписаны на этого пользователя'},
                     status=status.HTTP_400_BAD_REQUEST
@@ -78,7 +78,7 @@ class CustomUserViewSet(UserViewSet):
             )
 
         if request.method == 'DELETE':
-            follow = Follow.objects.filter(user=user, author=author)
+            follow = user.follower.filter(author=author)
             if not follow.exists():
                 return Response(
                     {'error': 'Вы не подписаны на этого пользователя'},
@@ -93,7 +93,7 @@ class CustomUserViewSet(UserViewSet):
     )
     def subscriptions(self, request):
         user = request.user
-        follows = Follow.objects.filter(user=user)
+        follows = user.follower.all()
         pages = self.paginate_queryset(follows)
         serializer = FollowSerializer(
             pages, many=True, context={'request': request}
@@ -115,37 +115,13 @@ class CustomUserViewSet(UserViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         
         if request.method == 'PUT':
-            try:
-                avatar_data = request.data.get('avatar')
-                if not avatar_data:
-                    raise serializers.ValidationError({'avatar': ['Это поле обязательно.']})
-                
-                if avatar_data.startswith('data:image'):
-                    format, imgstr = avatar_data.split(';base64,')
-                    ext = format.split('/')[-1]
-                    
-                    avatar_filename = f"{uuid.uuid4()}.{ext}"
-                    
-                    avatar_file = ContentFile(
-                        base64.b64decode(imgstr),
-                        name=avatar_filename
-                    )
-                    
-                    user.avatar = avatar_file
-                    user.save()
-                    
-                    return Response(
-                        {'avatar': request.build_absolute_uri(user.avatar.url)},
-                        status=status.HTTP_200_OK
-                    )
-                else:
-                    raise serializers.ValidationError({'avatar': ['Неверный формат данных.']})
-                    
-            except Exception as e:
-                return Response(
-                    {'error': str(e)},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+            serializer = UserAvatarSerializer(user, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(
+                {'avatar': request.build_absolute_uri(user.avatar.url)},
+                status=status.HTTP_200_OK
+            )
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -210,12 +186,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
             }, status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
-            if not model.objects.filter(user=user, recipe=recipe).exists():
+            item = model.objects.filter(user=user, recipe=recipe)
+            if not item.exists():
                 return Response(
                     {'error': f'Рецепт не в {action_name}'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            model.objects.filter(user=user, recipe=recipe).delete()
+            item.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
@@ -280,41 +257,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[AllowAny]
     )
     def generate_recipes(self, request):
-        logger.info("Recipe generation endpoint called")
         serializer = GenerateRecipeRequestSerializer(data=request.data)
-        if not serializer.is_valid():
-            logger.warning(f"Invalid recipe generation request: {serializer.errors}")
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
         
-        ingredients_data = []
-        for ing_data in serializer.validated_data['ingredients']:
-            ingredient = Ingredient.objects.get(id=ing_data['id'])
-            ingredients_data.append({
-                'id': ing_data['id'],
-                'name': ingredient.name,
-                'amount': ing_data.get('amount'),
-                'measurement_unit': ingredient.measurement_unit
-            })
-        
-        generator = RecipeGenerator()
         try:
-            recipes = generator.generate_recipes(
-                ingredients=ingredients_data,
-                allow_additional_ingredients=serializer.validated_data['allow_additional_ingredients'],
-                recipe_name=serializer.validated_data.get('recipe_name'),
-                count=serializer.validated_data['count']
-            )
+            recipes = generate_recipes_with_ai(serializer.validated_data)
             
             response_serializer = GeneratedRecipeSerializer(data=recipes, many=True)
-            if response_serializer.is_valid():
-                logger.info(f"Successfully generated {len(recipes)} recipes")
-                return Response(response_serializer.data, status=status.HTTP_200_OK)
-            else:
-                logger.error(f"Invalid generated recipe format: {response_serializer.errors}")
-                return Response(
-                    {"error": "Ошибка формата сгенерированных рецептов"}, 
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                )
+            response_serializer.is_valid(raise_exception=True)
+            
+            logger.info(f"Successfully generated {len(recipes)} recipes")
+            return Response(response_serializer.data, status=status.HTTP_200_OK)
         except ValueError as e:
             if "API key" in str(e):
                 logger.error("API key for recipe generation not configured")
