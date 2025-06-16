@@ -4,7 +4,6 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
 
-# Constants for validation
 MIN_COOKING_TIME = 1
 MAX_COOKING_TIME = 32000
 MIN_AMOUNT = 1
